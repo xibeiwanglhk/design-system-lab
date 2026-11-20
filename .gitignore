@@ -1,5 +1,6 @@
 # 依赖（本项目零依赖，正常不会有 node_modules，留着防止以后加工具链）
 node_modules/
+assets/
 
 # 系统文件
 .DS_Store
