@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>最小接入示例 · Design System Lab</title>
+    <!-- 主题在样式之前恢复，避免闪烁 -->
+    <script>
+      try {
+        var t = new URLSearchParams(location.search).get('theme') || localStorage.getItem('dsl-theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+    <!-- 只需要这三个样式文件：令牌 → 基础 → 组件 -->
+    <link rel="stylesheet" href="./styles/tokens.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/components.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主内容</a>
+
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+          <span class="site-brand__mark" aria-hidden="true">DS</span>
+          Design System Lab
+        </a>
+        <nav class="site-nav" aria-label="主导航">
+          <a href="./index.html">信息流</a>
+          <a href="./states.html">组件状态矩阵</a>
+          <a href="./demo.html" aria-current="page">最小接入示例</a>
+        </nav>
+        <button class="btn btn--ghost btn--sm" id="theme-toggle" type="button" aria-pressed="false">
+          🌙 暗色
+        </button>
+      </div>
+    </header>
+
+    <main class="page page--narrow" id="main">
+      <header class="page__header">
+        <p class="eyebrow">练习 4 · 最小接入模板</p>
+        <h1 class="page-title">这是一个只引用组件库的空页面</h1>
+        <p class="page-lede">
+          本页没有一行按钮/卡片样式：只引入 <code>tokens.css</code>、<code>base.css</code>、
+          <code>components.css</code>，然后用 class 组合出界面。你可以把这一页复制到任何静态项目里当起点。
+        </p>
+      </header>
+
+      <!-- 场景：操作区 -->
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">操作区</h2>
+          <p class="section__desc">同一组按钮，不同变体表达不同主次关系。</p>
+        </div>
+        <div class="row">
+          <button class="btn btn--primary" type="button">保存修改</button>
+          <button class="btn btn--secondary" type="button">取消</button>
+          <button class="btn btn--ghost" type="button">稍后再说</button>
+          <button class="btn btn--primary" type="button" disabled>保存中…</button>
+        </div>
+      </section>
+
+      <!-- 场景：信息流卡片 -->
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">信息流卡片</h2>
+          <p class="section__desc">整卡可点击时加 <code>card--interactive</code>，然后交给 JS 处理打开逻辑。</p>
+        </div>
+        <div class="feed">
+          <article class="card card--interactive" tabindex="0" aria-label="打开卡片：最小接入示例">
+            <header class="card__header">
+              <span class="avatar" aria-hidden="true">演</span>
+              <div class="card__meta">
+                <span class="card__author">示例作者</span>
+                <span class="card__time">刚刚 · 示例</span>
+              </div>
+              <button class="btn btn--ghost btn--sm card__more" type="button" aria-label="更多操作">⋯</button>
+            </header>
+            <div class="card__body">
+              <h3 class="card__title">卡片只需要 class，不需要复制样式</h3>
+              <p class="card__text">
+                改 tokens.json 里的令牌，这张卡片的颜色、圆角、间距会一起变化；改 components.css 里的状态规则，所有页面的卡片同时升级。
+              </p>
+              <ul class="card__tags">
+                <li class="tag">#最小接入</li>
+                <li class="tag tag--muted">#可复制模板</li>
+              </ul>
+            </div>
+            <footer class="card__footer">
+              <span class="card__stats">♡ 0 · 💬 0</span>
+              <div class="card__actions">
+                <button class="btn btn--ghost btn--sm" type="button">收藏</button>
+                <button class="btn btn--primary btn--sm" type="button">阅读全文</button>
+              </div>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- 场景：强制状态预览（不需要真的 hover） -->
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">强制状态预览</h2>
+          <p class="section__desc">写文档、做截图时，用 <code>.is-hover</code> / <code>.is-pressed</code> 固定状态。</p>
+        </div>
+        <div class="row">
+          <button class="btn btn--primary" type="button">默认</button>
+          <button class="btn btn--primary is-hover" type="button">悬停</button>
+          <button class="btn btn--primary is-pressed" type="button">按下</button>
+          <button class="btn btn--primary" type="button" disabled>禁用</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <span>Design System Lab · 最小接入模板</span>
+        <span class="row"><a href="./states.html">组件状态矩阵</a><a href="./index.html">完整信息流</a></span>
+      </div>
+    </footer>
+
+    <script>
+      // 最小主题切换：一行核心逻辑 + localStorage 记忆
+      (function () {
+        var root = document.documentElement;
+        var toggle = document.getElementById('theme-toggle');
+        function sync() {
+          var isDark = root.dataset.theme === 'dark';
+          toggle.setAttribute('aria-pressed', String(isDark));
+          toggle.textContent = isDark ? '☀️ 亮色' : '🌙 暗色';
+        }
+        toggle.addEventListener('click', function () {
+          var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+          if (next === 'dark') root.dataset.theme = 'dark';
+          else delete root.dataset.theme;
+          try {
+            localStorage.setItem('dsl-theme', next);
+          } catch (e) {}
+          sync();
+        });
+        sync();
+      })();
+    </script>
+  </body>
+</html>

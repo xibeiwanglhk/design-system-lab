@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Design System Lab · 组件状态矩阵</title>
+    <meta name="description" content="Button 与 FeedCard 组件的四种状态并排展示，以及语义设计令牌总览。" />
+    <script>
+      try {
+        var forcedTheme = new URLSearchParams(location.search).get('theme');
+        var savedTheme = forcedTheme || localStorage.getItem('dsl-theme');
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+          document.documentElement.dataset.theme = savedTheme;
+        }
+      } catch (error) {
+        /* localStorage 不可用时忽略 */
+      }
+    </script>
+    <link rel="stylesheet" href="./styles/tokens.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/components.css" />
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主内容</a>
+
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-brand" href="./index.html">
+          <span class="site-brand__mark" aria-hidden="true">DS</span>
+          Design System Lab
+        </a>
+        <nav class="site-nav" aria-label="主导航">
+          <a href="./index.html">信息流</a>
+          <a href="./states.html" aria-current="page">组件状态矩阵</a>
+          <a href="./states.html#tokens">设计令牌</a>
+        </nav>
+        <button class="btn btn--ghost btn--sm" id="theme-toggle" type="button" aria-pressed="false">
+          🌙 暗色
+        </button>
+      </div>
+    </header>
+
+    <main class="page" id="main">
+      <header class="page__header">
+        <p class="eyebrow">练习 1 · 组件的四种状态</p>
+        <h1 class="page-title">组件状态矩阵</h1>
+        <p class="page-lede">
+          每个组件都要有 default / hover / pressed / disabled 四种状态。真实交互用 <code>:hover</code>、
+          <code>:active</code>、<code>:disabled</code> 表达；为了能在一屏里静态检查全部状态，组件同时提供
+          <code>.is-hover</code>、<code>.is-pressed</code>、<code>.is-disabled</code> 强制状态类。
+        </p>
+        <div class="notice">
+          这个页面同时是"导入 Figma 对照"的样板页：在 Figma 中按同样的 State 变体搭组件，改完令牌后回到这里逐格比对。
+          回到 <a href="./index.html">信息流页</a> 可以体验真实鼠标交互。
+        </div>
+      </header>
+
+      <!-- ============================================================ Button -->
+      <section class="section" id="button-states">
+        <div class="section__head">
+          <h2 class="section__title">Button 按钮 · 3 变体 × 4 状态</h2>
+          <p class="section__desc">
+            hover / pressed 的差异全部来自变体类里的私有变量（<code>--_btn-bg-hover</code> 等），状态规则只写一遍。
+          </p>
+        </div>
+
+        <div class="stack stack--lg">
+          <div>
+            <h3 class="subsection-title">Primary 主要按钮</h3>
+            <div class="state-grid">
+              <div class="state-cell">
+                <button class="btn btn--primary" type="button">提交</button>
+                <span class="state-cell__label">默认 Default</span>
+                <span class="state-cell__hint">class="btn btn--primary"</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--primary is-hover" type="button">提交</button>
+                <span class="state-cell__label">悬停 Hover</span>
+                <span class="state-cell__hint">.is-hover / :hover</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--primary is-pressed" type="button">提交</button>
+                <span class="state-cell__label">按下 Pressed</span>
+                <span class="state-cell__hint">.is-pressed / :active</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--primary" type="button" disabled>提交</button>
+                <span class="state-cell__label">禁用 Disabled</span>
+                <span class="state-cell__hint">disabled 属性</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--primary" type="button" aria-disabled="true">
+                  提交
+                </button>
+                <span class="state-cell__label">禁用（aria）</span>
+                <span class="state-cell__hint">aria-disabled="true"</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="subsection-title">Secondary 次要按钮</h3>
+            <div class="state-grid">
+              <div class="state-cell">
+                <button class="btn btn--secondary" type="button">取消</button>
+                <span class="state-cell__label">默认 Default</span>
+                <span class="state-cell__hint">class="btn btn--secondary"</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--secondary is-hover" type="button">取消</button>
+                <span class="state-cell__label">悬停 Hover</span>
+                <span class="state-cell__hint">.is-hover / :hover</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--secondary is-pressed" type="button">取消</button>
+                <span class="state-cell__label">按下 Pressed</span>
+                <span class="state-cell__hint">.is-pressed / :active</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--secondary" type="button" disabled>取消</button>
+                <span class="state-cell__label">禁用 Disabled</span>
+                <span class="state-cell__hint">disabled 属性</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="subsection-title">Ghost 幽灵按钮</h3>
+            <div class="state-grid">
+              <div class="state-cell">
+                <button class="btn btn--ghost" type="button">更多</button>
+                <span class="state-cell__label">默认 Default</span>
+                <span class="state-cell__hint">class="btn btn--ghost"</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--ghost is-hover" type="button">更多</button>
+                <span class="state-cell__label">悬停 Hover</span>
+                <span class="state-cell__hint">.is-hover / :hover</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--ghost is-pressed" type="button">更多</button>
+                <span class="state-cell__label">按下 Pressed</span>
+                <span class="state-cell__hint">.is-pressed / :active</span>
+              </div>
+              <div class="state-cell">
+                <button class="btn btn--ghost" type="button" disabled>更多</button>
+                <span class="state-cell__label">禁用 Disabled</span>
+                <span class="state-cell__hint">disabled 属性</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ 尺寸与形态 -->
+      <section class="section" id="button-sizes">
+        <div class="section__head">
+          <h2 class="section__title">Button 尺寸与形态</h2>
+          <p class="section__desc">尺寸来自 <code>--size-control-height-*</code>，危险变体来自语义状态色。</p>
+        </div>
+        <div class="stack">
+          <div class="row">
+            <button class="btn btn--primary btn--sm" type="button">小号 sm</button>
+            <button class="btn btn--primary" type="button">默认 md</button>
+            <button class="btn btn--primary btn--lg" type="button">大号 lg</button>
+          </div>
+          <div class="row">
+            <button class="btn btn--danger" type="button">删除</button>
+            <button class="btn btn--danger is-hover" type="button">删除</button>
+            <button class="btn btn--secondary" type="button">
+              <svg
+                class="btn__icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+              </svg>
+              带图标
+            </button>
+            <button class="btn btn--ghost btn--sm" type="button" aria-label="更多操作">⋯</button>
+          </div>
+          <div class="row">
+            <a class="btn btn--secondary" href="#main">链接样式的按钮</a>
+            <button class="btn btn--primary btn--block" type="button">整行按钮 btn--block</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ Card -->
+      <section class="section" id="card-states">
+        <div class="section__head">
+          <h2 class="section__title">FeedCard 信息流卡片 · 4 状态</h2>
+          <p class="section__desc">
+            卡片本身是不可点击的容器；加 <code>card--interactive</code> 后整卡可点击，才有 hover / pressed 交互。
+          </p>
+        </div>
+
+        <div class="card-demo-grid">
+          <div class="stack">
+            <article class="card">
+              <header class="card__header">
+                <span class="avatar" aria-hidden="true">林</span>
+                <div class="card__meta">
+                  <span class="card__author">林小满</span>
+                  <span class="card__time">3 小时前 · 设计</span>
+                </div>
+              </header>
+              <div class="card__body">
+                <h3 class="card__title">默认状态的卡片</h3>
+                <p class="card__text">表面色、细分隔边框、卡片阴影，都来自语义令牌。</p>
+                <ul class="card__tags">
+                  <li class="tag">#设计令牌</li>
+                </ul>
+              </div>
+            </article>
+            <span class="state-cell__hint">默认 Default：class="card"</span>
+          </div>
+
+          <div class="stack">
+            <article class="card is-hover">
+              <header class="card__header">
+                <span class="avatar" aria-hidden="true">林</span>
+                <div class="card__meta">
+                  <span class="card__author">林小满</span>
+                  <span class="card__time">3 小时前 · 设计</span>
+                </div>
+              </header>
+              <div class="card__body">
+                <h3 class="card__title">悬停状态的卡片</h3>
+                <p class="card__text">阴影加深、边框变强、整体上移 2px，暗示"可以点进去"。</p>
+                <ul class="card__tags">
+                  <li class="tag">#状态设计</li>
+                </ul>
+              </div>
+            </article>
+            <span class="state-cell__hint">Hover：.is-hover / :hover</span>
+          </div>
+
+          <div class="stack">
+            <article class="card is-pressed">
+              <header class="card__header">
+                <span class="avatar" aria-hidden="true">林</span>
+                <div class="card__meta">
+                  <span class="card__author">林小满</span>
+                  <span class="card__time">3 小时前 · 设计</span>
+                </div>
+              </header>
+              <div class="card__body">
+                <h3 class="card__title">按下状态的卡片</h3>
+                <p class="card__text">回到原位并轻微缩小，制造"被按下去"的物理反馈。</p>
+                <ul class="card__tags">
+                  <li class="tag">#CSS</li>
+                </ul>
+              </div>
+            </article>
+            <span class="state-cell__hint">Pressed：.is-pressed / :active</span>
+          </div>
+
+          <div class="stack">
+            <article class="card" aria-disabled="true">
+              <header class="card__header">
+                <span class="avatar" aria-hidden="true">停</span>
+                <div class="card__meta">
+                  <span class="card__author">已下线的动态</span>
+                  <span class="card__time">2 天前 · 产品</span>
+                </div>
+              </header>
+              <div class="card__body">
+                <h3 class="card__title">禁用状态的卡片</h3>
+                <p class="card__text">用 aria-disabled 表达禁用，而不是删掉内容，读屏软件仍能读到它。</p>
+                <ul class="card__tags">
+                  <li class="tag">#可访问性</li>
+                </ul>
+              </div>
+            </article>
+            <span class="state-cell__hint">Disabled：aria-disabled="true" / .is-disabled</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ Tokens -->
+      <section class="section" id="tokens">
+        <div class="section__head">
+          <h2 class="section__title">设计令牌总览</h2>
+          <p class="section__desc">
+            下面每个色块都直接引用 CSS 变量；括号里是它在 <code>tokens.json</code> / Figma 中的变量名。切换暗色主题，所有色块会一起变——
+            因为值为 <code>[data-theme="dark"]</code> 下的新令牌。
+          </p>
+        </div>
+
+        <h3 class="subsection-title">品牌色</h3>
+        <div class="swatch-grid">
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-brand-bg)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-brand-bg</span>
+              <span class="swatch__value">Figma: color/brand/bg</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-brand-bg-hover)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-brand-bg-hover</span>
+              <span class="swatch__value">Figma: color/brand/bg-hover</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-brand-bg-active)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-brand-bg-active</span>
+              <span class="swatch__value">Figma: color/brand/bg-active</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-brand-subtle)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-brand-subtle</span>
+              <span class="swatch__value">Figma: color/brand/subtle</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-brand-text)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-brand-text</span>
+              <span class="swatch__value">Figma: color/brand/text</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">文字与背景</h3>
+        <div class="swatch-grid">
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-text-primary)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-text-primary</span>
+              <span class="swatch__value">Figma: color/text/primary</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-text-secondary)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-text-secondary</span>
+              <span class="swatch__value">Figma: color/text/secondary</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-text-muted)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-text-muted</span>
+              <span class="swatch__value">Figma: color/text/muted</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-text-link)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-text-link</span>
+              <span class="swatch__value">Figma: color/text/link</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-bg-canvas)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-bg-canvas</span>
+              <span class="swatch__value">Figma: color/bg/canvas</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-bg-surface)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-bg-surface</span>
+              <span class="swatch__value">Figma: color/bg/surface</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-bg-surface-hover)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-bg-surface-hover</span>
+              <span class="swatch__value">Figma: color/bg/surface-hover</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-bg-surface-active)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-bg-surface-active</span>
+              <span class="swatch__value">Figma: color/bg/surface-active</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">边框、状态与禁用</h3>
+        <div class="swatch-grid">
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-border-default)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-border-default</span>
+              <span class="swatch__value">Figma: color/border/default</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-border-strong)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-border-strong</span>
+              <span class="swatch__value">Figma: color/border/strong</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-border-focus)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-border-focus</span>
+              <span class="swatch__value">Figma: color/border/focus</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-status-success)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-status-success</span>
+              <span class="swatch__value">Figma: color/status/success</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-status-warning)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-status-warning</span>
+              <span class="swatch__value">Figma: color/status/warning</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-status-danger)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-status-danger</span>
+              <span class="swatch__value">Figma: color/status/danger</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-disabled-bg)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-disabled-bg</span>
+              <span class="swatch__value">Figma: color/disabled/bg</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch__chip" style="background-color: var(--color-tag-bg)"></div>
+            <div class="swatch__body">
+              <span class="swatch__name">--color-tag-bg</span>
+              <span class="swatch__value">Figma: color/tag/bg</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">圆角与控件高度</h3>
+        <div class="spec-list">
+          <div class="spec-row">
+            <span class="spec-row__name">--radius-control = 10px</span>
+            <span class="spec-row__sample">按钮圆角</span>
+            <span class="state-cell__hint">Figma: radius/control</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-row__name">--radius-surface = 16px</span>
+            <span class="spec-row__sample">卡片圆角</span>
+            <span class="state-cell__hint">Figma: radius/surface</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-row__name">--size-control-height-md = 40px</span>
+            <span class="spec-row__sample">默认按钮高度</span>
+            <span class="state-cell__hint">Figma: size/control-height-md</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-row__name">--space-card-padding = 20px</span>
+            <span class="spec-row__sample">卡片内边距</span>
+            <span class="state-cell__hint">Figma: space/card-padding</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-row__name">--motion-duration = 180ms</span>
+            <span class="spec-row__sample">状态过渡时长</span>
+            <span class="state-cell__hint">Figma: motion/duration</span>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">字体层级</h3>
+        <div class="type-spec">
+          <div class="type-spec__row">
+            <span class="type-spec__name">--font-size-display · 24px</span>
+            <span style="font-size: var(--font-size-display); font-weight: 700">页面标题</span>
+          </div>
+          <div class="type-spec__row">
+            <span class="type-spec__name">--font-size-title · 18px</span>
+            <span style="font-size: var(--font-size-title); font-weight: 600">卡片标题</span>
+          </div>
+          <div class="type-spec__row">
+            <span class="type-spec__name">--font-size-body · 16px</span>
+            <span style="font-size: var(--font-size-body)">正文内容</span>
+          </div>
+          <div class="type-spec__row">
+            <span class="type-spec__name">--font-size-meta · 14px</span>
+            <span style="font-size: var(--font-size-meta); color: var(--color-text-secondary)">辅助信息</span>
+          </div>
+          <div class="type-spec__row">
+            <span class="type-spec__name">--font-size-caption · 12px</span>
+            <span style="font-size: var(--font-size-caption); color: var(--color-text-muted)">标签/说明文字</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================ 对照表 -->
+      <section class="section" id="mapping">
+        <div class="section__head">
+          <h2 class="section__title">CSS 状态 ↔ Figma 变体对照</h2>
+          <p class="section__desc">在 Figma 里搭组件时，用这张表对齐命名，才能和代码一一对应。</p>
+        </div>
+        <div class="spec-list">
+          <div class="spec-row">
+            <span class="spec-row__name">默认</span>
+            <span class="spec-row__sample"><code>.btn</code></span>
+            <span class="state-cell__hint">Figma 变体 State=Default</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-row__name">悬停</span>
+            <span class="spec-row__sample"><code>:hover</code> / <code>.is-hover</code></span>
+            <span class="state-cell__hint">Figma 变体 State=Hover</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-row__name">按下</span>
+            <span class="spec-row__sample"><code>:active</code> / <code>.is-pressed</code></span>
+            <span class="state-cell__hint">Figma 变体 State=Pressed</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-row__name">禁用</span>
+            <span class="spec-row__sample"><code>:disabled</code> / <code>[aria-disabled="true"]</code> / <code>.is-disabled</code></span>
+            <span class="state-cell__hint">Figma 变体 State=Disabled</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <span>Design System Lab · 练习项目（HTML / CSS / 设计令牌 / Figma 双向同步）</span>
+        <span class="row">
+          <a href="./index.html">返回信息流</a>
+          <a href="https://github.com/" target="_blank" rel="noreferrer">GitHub 仓库</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>

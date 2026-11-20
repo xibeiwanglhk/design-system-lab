@@ -1,0 +1,79 @@
+# =====================================================================
+# 设计令牌检查 / 生成 —— design-system-lab
+#
+# 目的：让「tokens/tokens.json 改了，但 src/styles/tokens.css 没重新生成」
+#       这类问题进不了主干。
+#
+# 触发：
+#   push 到 main 且改动 tokens/**、生成脚本或本工作流  -> 重新生成并自动提交
+#   pull_request（同样的路径）                          -> 只校验，不写仓库
+#
+# 为什么不会死循环（docs/03-Git与GitHub.md 有图解）：
+#   1. push 的 paths 过滤里没有 src/**，而自动提交只改 src/styles/tokens.css，
+#      这个提交本身不满足本工作流的触发条件；
+#   2. 用 GITHUB_TOKEN 推送的提交默认不会再触发其它 workflow run；
+#   3. 提交信息带 [skip ci]，即使有人换成 PAT 推送，GitHub 也会跳过这次运行。
+# =====================================================================
+name: Build tokens
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tokens/**'
+      - 'scripts/build-tokens.mjs'
+      - '.github/workflows/build-tokens.yml'
+
+  pull_request:
+    paths:
+      - 'tokens/**'
+      - 'scripts/build-tokens.mjs'
+      - '.github/workflows/build-tokens.yml'
+
+# push 时需要把生成物提交回仓库，所以要有写权限。
+# 注意：仓库设置可以进一步收紧这个上限（Settings → Actions → General →
+# Workflow permissions），留空或只读会导致推送生成物时 403。
+permissions:
+  contents: write
+
+# 同一个 ref 串行执行：后一次 push 会排队等前一次跑完，避免两个 run
+# 同时提交、后提交的那个被 non-fast-forward 拒绝。
+concurrency:
+  group: build-tokens-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tokens:
+    name: 令牌生成 / 校验
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ---------- PR 分支：只校验，绝不修改仓库 ----------
+      - name: 校验 tokens.css 是否最新（pull_request）
+        if: github.event_name == 'pull_request'
+        run: node scripts/build-tokens.mjs --check
+
+      # ---------- push 到 main：真的生成一次 ----------
+      - name: 生成 tokens.css（push）
+        if: github.event_name == 'push'
+        run: node scripts/build-tokens.mjs
+
+      # 生成物有变化才提交；没有变化时这个 Action 会正常退出并提示 Nothing to commit。
+      - name: 提交生成物（push）
+        if: github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore(tokens): 重新生成 tokens.css [skip ci]'
+          file_pattern: 'src/styles/tokens.css'
+          commit_user_name: 'github-actions[bot]'
+          commit_user_email: '41898282+github-actions[bot]@users.noreply.github.com'
+          commit_author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'

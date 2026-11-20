@@ -1,0 +1,12 @@
+# 统一换行符为 LF：避免 Windows 本地提交的 CRLF 与 GitHub Actions（Ubuntu）生成的 LF
+# 反复产生"整个文件都变了"的假 diff
+* text=auto eol=lf
+
+# 二进制文件不做换行转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

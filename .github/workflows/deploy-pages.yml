@@ -1,0 +1,72 @@
+# =====================================================================
+# GitHub Pages 部署 —— design-system-lab
+#
+# 站点根目录 = src/（不是仓库根目录）。所以：
+#   - 页面里引用样式必须写相对路径 ./styles/tokens.css
+#   - 写绝对路径 /styles/tokens.css 会 404，因为站点被挂在
+#     https://<用户名>.github.io/design-system-lab/ 这个子路径下
+#
+# 首次使用前，要去 Settings → Pages → Build and deployment →
+# Source 选择 "GitHub Actions"，否则 configure-pages 步骤会报错。
+# =====================================================================
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tokens/**'
+      - 'scripts/build-tokens.mjs'
+      - '.github/workflows/deploy-pages.yml'
+
+  # 在 Actions 页面手动点 "Run workflow" 也能部署，方便排错。
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Pages 同时只允许一个部署：新的 push 会取消还在跑的旧部署，避免旧版本晚到
+# 覆盖新版本。官方 Pages 模板更保守（cancel-in-progress: false），如果你希望
+# 不打断进行中的部署，可以改成 false。
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: 构建并部署到 Pages
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 部署前现场生成，保证站点用的是最新令牌（不依赖仓库里的文件是否最新）。
+      - name: 生成最新设计令牌
+        run: node scripts/build-tokens.mjs
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      # 直接上传 src/ 目录，它就是这个静态站点的根目录。
+      - name: 上传站点目录 src/
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./src
+
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,17 @@
+{
+  "name": "design-system-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "从设计令牌到 Figma 双向同步、带四种状态的 HTML/CSS 组件练习项目",
+  "type": "module",
+  "scripts": {
+    "tokens": "node scripts/build-tokens.mjs",
+    "tokens:check": "node scripts/build-tokens.mjs --check",
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "check": "node scripts/build-tokens.mjs --check"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

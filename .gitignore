@@ -1,0 +1,23 @@
+# 依赖（本项目零依赖，正常不会有 node_modules，留着防止以后加工具链）
+node_modules/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+
+# 环境变量与密钥：绝对不要提交
+.env
+.env.*
+*.pem
+
+# 日志
+*.log
+npm-debug.log*
+
+# 构建产物（目前只有 tokens.css 是"生成物但需要提交"，不要忽略它）
+dist/

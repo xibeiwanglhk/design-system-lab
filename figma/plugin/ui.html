@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>DSL Token Bridge</title>
+    <style>
+      /* ------------------------------------------------------------------
+       * 全部样式内联，不引任何外部资源（Figma 插件默认没有网络权限）。
+       * 颜色直接写死，避免依赖 design-system-lab 的 tokens.css。
+       * ------------------------------------------------------------------ */
+      :root {
+        --bg: #ffffff;
+        --panel: #ffffff;
+        --panel-soft: #f8fafc;
+        --border: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --text: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --brand: #2563eb;
+        --brand-hover: #1d4ed8;
+        --brand-soft: #eff6ff;
+        --success: #047857;
+        --warn: #b45309;
+        --danger: #b91c1c;
+        --code-bg: #f8fafc;
+        --radius: 10px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f172a;
+          --panel: #1e293b;
+          --panel-soft: #172033;
+          --border: #334155;
+          --border-strong: #475569;
+          --text: #f8fafc;
+          --text-secondary: #cbd5e1;
+          --text-muted: #94a3b8;
+          --brand: #3b82f6;
+          --brand-hover: #60a5fa;
+          --brand-soft: #1e3a8a;
+          --success: #34d399;
+          --warn: #fbbf24;
+          --danger: #f87171;
+          --code-bg: #0b1220;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei",
+          "PingFang SC", "Noto Sans SC", Roboto, sans-serif;
+        font-size: 12px;
+        line-height: 1.6;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 12px 16px 10px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel-soft);
+        flex: 0 0 auto;
+      }
+
+      .title {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      .subtitle {
+        margin-top: 2px;
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+
+      main {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 12px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--panel);
+        padding: 10px 12px 12px;
+      }
+
+      .panel__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .hint {
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+
+      textarea {
+        width: 100%;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        background: var(--code-bg);
+        color: var(--text);
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 11px;
+        line-height: 1.5;
+        padding: 8px 10px;
+        resize: vertical;
+        outline: none;
+      }
+
+      textarea:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgb(37 99 235 / 0.18);
+      }
+
+      #import-json {
+        height: 132px;
+      }
+
+      #export-json {
+        height: 132px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .row .meta {
+        margin-left: auto;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      button {
+        font-family: inherit;
+        font-size: 12px;
+        line-height: 1;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-strong);
+        background: var(--panel);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+      }
+
+      button:hover:not(:disabled) {
+        background: var(--panel-soft);
+        border-color: var(--text-muted);
+      }
+
+      button:focus-visible {
+        outline: 2px solid var(--brand);
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      button.primary {
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      button.primary:hover:not(:disabled) {
+        background: var(--brand-hover);
+        border-color: var(--brand-hover);
+      }
+
+      button.link {
+        border: none;
+        background: none;
+        color: var(--text-muted);
+        padding: 0;
+        font-size: 11px;
+        text-decoration: underline;
+      }
+
+      button.link:hover {
+        color: var(--text);
+        background: none;
+      }
+
+      .panel--log {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 148px;
+      }
+
+      .log {
+        flex: 1 1 auto;
+        height: 118px;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--code-bg);
+        padding: 6px 8px;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 11px;
+        line-height: 1.55;
+      }
+
+      .log:empty::before {
+        content: "运行插件后，这里会显示每一步的结果。";
+        color: var(--text-muted);
+        font-family: inherit;
+      }
+
+      .line {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .line--success {
+        color: var(--success);
+      }
+
+      .line--warn {
+        color: var(--warn);
+      }
+
+      .line--error {
+        color: var(--danger);
+      }
+
+      .line--info {
+        color: var(--text-secondary);
+      }
+
+      footer {
+        flex: 0 0 auto;
+        padding: 8px 16px 10px;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+
+      kbd {
+        border: 1px solid var(--border-strong);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 0 4px;
+        font-family: inherit;
+        font-size: 10px;
+        background: var(--panel-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="title">DSL Token Bridge</div>
+      <div class="subtitle">
+        tokens.json → Figma 变量与组件；Figma 的改动 → Tokens Studio 兼容 JSON
+      </div>
+    </header>
+
+    <main>
+      <!-- ① 导入 -->
+      <section class="panel">
+        <div class="panel__head">
+          <h2>① 导入 tokens.json</h2>
+          <span class="hint">粘贴 tokens/tokens.json 的全文</span>
+        </div>
+        <textarea
+          id="import-json"
+          spellcheck="false"
+          autocomplete="off"
+          placeholder='{ "core": { ... }, "semantic": { ... }, "dark": { ... } }'
+        ></textarea>
+        <div class="row">
+          <button id="btn-import" class="primary" type="button">① 生成变量与组件</button>
+          <button id="btn-clear" type="button">清空</button>
+          <span id="import-meta" class="meta">0 字符</span>
+        </div>
+      </section>
+
+      <!-- ② 导出 -->
+      <section class="panel">
+        <div class="panel__head">
+          <h2>② 导出变量 JSON</h2>
+          <span class="hint">只导 “Design Tokens*” 开头的集合</span>
+        </div>
+        <textarea
+          id="export-json"
+          readonly
+          spellcheck="false"
+          placeholder="点下面的按钮，把 Figma 里的变量导出成 Tokens Studio 兼容 JSON"
+        ></textarea>
+        <div class="row">
+          <button id="btn-export" class="primary" type="button">② 从 Figma 导出变量 JSON</button>
+          <button id="btn-copy" type="button">复制</button>
+          <span id="export-meta" class="meta">—</span>
+        </div>
+      </section>
+
+      <!-- 日志 -->
+      <section class="panel panel--log">
+        <div class="panel__head">
+          <h2>日志</h2>
+          <button id="btn-clear-log" class="link" type="button">清空日志</button>
+        </div>
+        <div id="log" class="log" role="log" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>
+      插件不联网、不上传数据。导入框里按 <kbd>Ctrl</kbd> + <kbd>Enter</kbd> 也能直接生成。
+    </footer>
+
+    <script>
+      (function () {
+        'use strict';
+
+        var importEl = document.getElementById('import-json');
+        var exportEl = document.getElementById('export-json');
+        var logEl = document.getElementById('log');
+        var importMeta = document.getElementById('import-meta');
+        var exportMeta = document.getElementById('export-meta');
+        var btnImport = document.getElementById('btn-import');
+        var btnExport = document.getElementById('btn-export');
+        var btnClear = document.getElementById('btn-clear');
+        var btnCopy = document.getElementById('btn-copy');
+        var btnClearLog = document.getElementById('btn-clear-log');
+
+        var busy = false;
+        var watchdog = null;
+        // 上一次导出是否带 dark 段；false 时复制前要弹确认，避免静默丢暗色主题
+        var lastExportHasDark = null;
+
+        function nowLabel() {
+          var date = new Date();
+          var pad = function (n) {
+            return n < 10 ? '0' + n : String(n);
+          };
+          return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+        }
+
+        function addLog(message, level) {
+          var line = document.createElement('div');
+          line.className = 'line line--' + (level || 'info');
+          line.textContent = '[' + nowLabel() + '] ' + message;
+          logEl.appendChild(line);
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function setBusy(value) {
+          busy = value;
+          btnImport.disabled = value;
+          btnExport.disabled = value;
+          btnImport.textContent = value ? '处理中…' : '① 生成变量与组件';
+
+          // 看门狗：万一主线程抛错退出、没回消息，别让按钮永远卡在"处理中"
+          if (watchdog) {
+            clearTimeout(watchdog);
+            watchdog = null;
+          }
+          if (value) {
+            watchdog = setTimeout(function () {
+              if (!busy) return;
+              setBusy(false);
+              addLog(
+                '超过 60 秒没收到主线程的回应。可能是 Figma 卡住了，或者插件报错退出了：' +
+                  '打开 Plugins → Development → Open console 看报错，再重新运行插件。变量/组件可能已经部分写入。',
+                'warn'
+              );
+            }, 60000);
+          }
+        }
+
+        function charCount(text) {
+          return text.length.toLocaleString('zh-CN');
+        }
+
+        function updateImportMeta() {
+          var text = importEl.value;
+          importMeta.textContent = charCount(text) + ' 字符';
+        }
+
+        function post(type, payload) {
+          parent.postMessage({ pluginMessage: { type: type, payload: payload } }, '*');
+        }
+
+        function requestImport() {
+          if (busy) return;
+          var text = importEl.value.trim();
+          if (!text) {
+            addLog('导入框是空的：先复制 tokens/tokens.json 的全文再点按钮。', 'warn');
+            importEl.focus();
+            return;
+          }
+          // 先在 UI 侧做一次 JSON 语法检查，错误提示能更快出现在日志里
+          try {
+            JSON.parse(text);
+          } catch (err) {
+            addLog('这段 JSON 有语法错误：' + err.message, 'error');
+            addLog('提示：用 Get-Content -Raw tokens/tokens.json | Set-Clipboard 复制可以避免漏字符。', 'info');
+            return;
+          }
+          setBusy(true);
+          addLog('开始生成变量与组件，请等日志出现“变量处理完成”。', 'info');
+          post('import', text);
+        }
+
+        function requestExport() {
+          if (busy) return;
+          setBusy(true);
+          exportMeta.textContent = '导出中…';
+          addLog('开始从 Figma 读取变量…', 'info');
+          post('export');
+        }
+
+        function copyExport() {
+          var text = exportEl.value;
+          if (!text) {
+            addLog('还没有可复制的内容，先点“② 从 Figma 导出变量 JSON”。', 'warn');
+            return;
+          }
+          if (lastExportHasDark === false) {
+            var proceed = window.confirm(
+              '注意：这次导出的 JSON 里没有 dark 段。\n\n' +
+                'Figma 免费版只有单模式，而且本文件没有「上次导入的 tokens.json」的 dark 记录。\n' +
+                '直接整文件覆盖 tokens.json 会让暗色主题失效（切暗色变白底）。\n\n' +
+                '建议：只把改动的值手动合并回 tokens.json，或参考 docs/04 的「2.18 免费版怎么安全回写」。\n\n' +
+                '仍然复制吗？'
+            );
+            if (!proceed) {
+              addLog('已取消复制：请先按 docs/04 的「免费版怎么安全回写」处理 dark 段。', 'warn');
+              return;
+            }
+            addLog('你选择了仍然复制：覆盖 tokens.json 后请立刻检查暗色主题是否正常。', 'warn');
+          }
+          var manual = function () {
+            exportEl.focus();
+            exportEl.select();
+            addLog('自动复制被浏览器拦住了：内容已经全选，请按 Ctrl + C 手动复制。', 'warn');
+          };
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(
+              function () {
+                addLog('已复制到剪贴板（' + charCount(text) + ' 字符）。', 'success');
+              },
+              function () {
+                // 再试一次 execCommand，最后退回手动
+                if (!legacyCopy()) manual();
+              }
+            );
+          } else if (!legacyCopy()) {
+            manual();
+          }
+        }
+
+        function legacyCopy() {
+          try {
+            exportEl.focus();
+            exportEl.select();
+            var ok = document.execCommand && document.execCommand('copy');
+            if (ok) {
+              addLog('已复制到剪贴板（兼容模式）。', 'success');
+              return true;
+            }
+          } catch (err) {
+            /* 落到最后的手动提示 */
+          }
+          return false;
+        }
+
+        function clearAll() {
+          importEl.value = '';
+          exportEl.value = '';
+          exportMeta.textContent = '—';
+          updateImportMeta();
+          addLog('已清空输入框和导出结果（日志保留）。', 'info');
+        }
+
+        btnImport.addEventListener('click', requestImport);
+        btnExport.addEventListener('click', requestExport);
+        btnCopy.addEventListener('click', copyExport);
+        btnClear.addEventListener('click', clearAll);
+        btnClearLog.addEventListener('click', function () {
+          logEl.textContent = '';
+        });
+
+        importEl.addEventListener('input', updateImportMeta);
+        importEl.addEventListener('keydown', function (event) {
+          if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault();
+            requestImport();
+          }
+        });
+
+        // 主线程 -> UI
+        window.onmessage = function (event) {
+          var msg = event.data && event.data.pluginMessage;
+          if (!msg || !msg.type) return;
+
+          if (msg.type === 'log') {
+            addLog(msg.message, msg.level);
+            return;
+          }
+
+          if (msg.type === 'import-done') {
+            setBusy(false);
+            var stats = (msg.stats && msg.stats.variables) || {};
+            var comps = (msg.stats && msg.stats.components) || {};
+            addLog(
+              '全部完成：新建变量 ' + (stats.created || 0) +
+                ' 个、更新 ' + (stats.updated || 0) +
+                ' 个、跳过 ' + (stats.skipped || 0) +
+                ' 个；Button ' + (comps.buttons || 0) +
+                ' 个变体，FeedCard ' + (comps.cards || 0) + ' 个状态。',
+              'success'
+            );
+            addLog('下一步：在左侧变量面板核对命名，或在画布上查看 Button / FeedCard 组件集。', 'info');
+            return;
+          }
+
+          if (msg.type === 'export-result') {
+            setBusy(false);
+            var st = msg.stats || {};
+            var hasDark = Boolean(st.hasDark);
+            lastExportHasDark = hasDark;
+            exportEl.value = msg.json || '';
+            exportMeta.textContent =
+              charCount(exportEl.value) + ' 字符' + (hasDark ? '' : ' · 缺少 dark 段');
+            addLog(
+              '导出成功：' + (st.variables || 0) + ' 个变量（core ' + (st.core || 0) +
+                ' / semantic ' + (st.semantic || 0) + '），Dark 覆盖 ' + (st.darkOverrides || 0) + ' 个。',
+              'success'
+            );
+            if (hasDark) {
+              addLog('确认无误后点“复制”，再回仓库覆盖 tokens/tokens.json（记得先备份或在分支上做）。', 'info');
+            } else {
+              addLog(
+                '⚠️ 这次导出没有 dark 段：直接整文件覆盖会让暗色主题失效。' +
+                  '请按 docs/04 的「2.18 免费版怎么安全回写」处理，或点复制时按提示确认。',
+                'warn'
+              );
+            }
+            return;
+          }
+
+          if (msg.type === 'error') {
+            setBusy(false);
+            if (msg.scope === 'export') exportMeta.textContent = '导出失败';
+            addLog(msg.message || '未知错误', 'error');
+            return;
+          }
+        };
+
+        updateImportMeta();
+        addLog('就绪：先粘贴 tokens.json，点“① 生成变量与组件”。', 'info');
+      })();
+    </script>
+  </body>
+</html>
